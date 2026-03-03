@@ -7,8 +7,6 @@ import {
   deleteArtworkById,
   translateDescription,
   updateDescriptionEn,
-  translateTitle,
-  updateTitleEn,
 } from '../api/artworks';
 import { getAllArtworkTypes } from '../api/artworkTypes';
 import { FaTrash, FaSave, FaArrowLeft, FaLanguage, FaSync } from 'react-icons/fa';
@@ -44,9 +42,7 @@ export default function AdminArtworkDetail() {
   
   const [descriptionLang, setDescriptionLang] = useState('fr'); // 'fr' ou 'en'
   const [descriptionEn, setDescriptionEn] = useState('');
-  const [titleEn, setTitleEn] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
-  const [isTranslatingTitle, setIsTranslatingTitle] = useState(false);
   const [fontSizeInput, setFontSizeInput] = useState('');
   const editorRefFr = useRef(null);
   const editorRefEn = useRef(null);
@@ -98,9 +94,6 @@ export default function AdminArtworkDetail() {
       // Charger la traduction anglaise si elle existe
       if (artwork.translations && artwork.translations.en && artwork.translations.en.description) {
         setDescriptionEn(artwork.translations.en.description);
-      }
-      if (artwork.translations && artwork.translations.en && artwork.translations.en.title) {
-        setTitleEn(artwork.translations.en.title);
       }
     } catch (error) {
       console.error('Erreur lors du chargement du tableau:', error);
@@ -310,29 +303,6 @@ useEffect(() => {
     }
   };
 
-  const handleTranslateTitle = async () => {
-    if (!formData.title || !formData.title.trim()) {
-      alert("Le titre français est vide !");
-      return;
-    }
-
-    if (!id || isNewArtwork) {
-      alert("Veuillez d'abord sauvegarder l'œuvre avant de traduire.");
-      return;
-    }
-
-    try {
-      setIsTranslatingTitle(true);
-      const result = await translateTitle(id, formData.title);
-      setTitleEn(result.title_en);
-    } catch (error) {
-      console.error("Erreur de traduction du titre:", error);
-      alert("Échec de la traduction: " + error.message);
-    } finally {
-      setIsTranslatingTitle(false);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -383,11 +353,6 @@ useEffect(() => {
       // Si la description EN a été modifiée, la sauvegarder aussi
       if (descriptionEn && descriptionEn.trim() && !isNewArtwork) {
         await updateDescriptionEn(artworkId, descriptionEn);
-      }
-
-      // Si le titre EN a été modifié, le sauvegarder aussi
-      if (titleEn && titleEn.trim() && !isNewArtwork) {
-        await updateTitleEn(artworkId, titleEn);
       }
       
       navigate('/admin/artworks');
@@ -506,43 +471,6 @@ useEffect(() => {
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="Titre de l'œuvre"
             />
-
-            <div className="editable-container" style={{ marginTop: '0.75rem' }}>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <input
-                  type="text"
-                  className="tableau-titre editable en-title"
-                  value={titleEn}
-                  onChange={(e) => setTitleEn(e.target.value)}
-                  placeholder="Title (EN)"
-                  disabled={isNewArtwork}
-                />
-                {!isNewArtwork && (
-                  <button
-                    type="button"
-                    className="translate-btn"
-                    onClick={handleTranslateTitle}
-                    disabled={isTranslatingTitle || !formData.title}
-                    title="Traduire le titre français en anglais"
-                  >
-                    {isTranslatingTitle ? (
-                      <>
-                        <FaSync className="spin" /> Traduction...
-                      </>
-                    ) : (
-                      <>
-                        <FaLanguage /> Traduire
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
-              {isNewArtwork && (
-                <p className="description-hint" style={{ marginTop: '0.25rem' }}>
-                  💡 Sauvegardez d'abord l'œuvre pour activer la traduction
-                </p>
-              )}
-            </div>
             
             <div className="tableau-prix editable-container">
               <input

@@ -116,41 +116,6 @@ export async function translateDescription(artworkId, descriptionFr) {
   return await res.json();
 }
 
-export async function translateTitle(artworkId, titleFr) {
-  const res = await fetch(`${API}/translate-title`, {
-    method: "POST",
-    credentials: 'include',
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      artwork_id: artworkId,
-      title_fr: titleFr
-    })
-  });
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Échec de la traduction (${res.status}): ${errorText || res.statusText}`);
-  }
-  return await res.json();
-}
-
-export async function updateTitleEn(artworkId, titleEn) {
-  const res = await fetch(`${API}/update-title-en`, {
-    method: "PUT",
-    credentials: 'include',
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      artwork_id: artworkId,
-      title_en: titleEn
-    })
-  });
-  if (!res.ok) throw new Error("Échec de la mise à jour");
-  return await res.json();
-}
-
 export async function updateDescriptionEn(artworkId, descriptionEn) {
   const res = await fetch(`${API}/update-description-en`, {
     method: "PUT",
