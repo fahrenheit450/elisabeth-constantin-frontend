@@ -155,7 +155,7 @@ const TypesManager = ({ availableTypes, onTypesChange }) => {
               <div className="add-type-section">
                 <input
                   type="text"
-                  placeholder="Libellé FR (ex: Peinture, Plan 3D)"
+                  placeholder="Français"
                   value={newDisplayFr}
                   onChange={(e) => setNewDisplayFr(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleAddType()}
@@ -163,7 +163,7 @@ const TypesManager = ({ availableTypes, onTypesChange }) => {
                 />
                 <input
                   type="text"
-                  placeholder="Label EN (ex: Painting, 3D Panel)"
+                  placeholder="Anglais"
                   value={newDisplayEn}
                   onChange={(e) => setNewDisplayEn(e.target.value)}
                   className="add-type-input"

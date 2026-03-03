@@ -109,7 +109,10 @@ export async function translateDescription(artworkId, descriptionFr) {
       description_fr: descriptionFr
     })
   });
-  if (!res.ok) throw new Error("Échec de la traduction");
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Échec de la traduction (${res.status}): ${errorText || res.statusText}`);
+  }
   return await res.json();
 }
 
@@ -125,7 +128,10 @@ export async function translateTitle(artworkId, titleFr) {
       title_fr: titleFr
     })
   });
-  if (!res.ok) throw new Error("Échec de la traduction");
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Échec de la traduction (${res.status}): ${errorText || res.statusText}`);
+  }
   return await res.json();
 }
 
