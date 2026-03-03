@@ -10,12 +10,13 @@ export async function getAllArtworkTypes() {
   return await res.json();
 }
 
-export async function createArtworkType(name, displayName = null) {
+export async function createArtworkType(name, displayNameFr = null, displayNameEn = null) {
   const payload = { 
     name: name.toLowerCase().trim(),
-    display_name: displayName || null
+    display_name_fr: displayNameFr || null,
+    display_name_en: displayNameEn || null
   };
-  
+
   const res = await fetch(`${API}/`, {
     method: 'POST',
     headers: {
@@ -24,12 +25,12 @@ export async function createArtworkType(name, displayName = null) {
     credentials: 'include',
     body: JSON.stringify(payload)
   });
-  
+
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`Erreur ${res.status}: ${errorText}`);
   }
-  
+
   return await res.json();
 }
 
@@ -44,5 +45,19 @@ export async function deleteArtworkType(typeName) {
     throw new Error(`Erreur ${res.status}: ${errorText}`);
   }
   
+  return await res.json();
+}
+
+export async function translateArtworkTypeEn(typeName) {
+  const res = await fetch(`${API}/${encodeURIComponent(typeName)}/translate-en`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Erreur ${res.status}: ${errorText}`);
+  }
+
   return await res.json();
 }

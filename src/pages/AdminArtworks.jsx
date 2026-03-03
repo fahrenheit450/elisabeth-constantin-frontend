@@ -8,7 +8,7 @@ import TypesManager from "../components/TypesManager";
 import AdminCard from "../components/AdminCard";
 import SortButton from "../components/SortButton";
 import {
-  getAllArtworks,
+  getAllArtworksAdmin,
   deleteArtworkById,
 } from "../api/artworks";
 import { getAllArtworkTypes } from "../api/artworkTypes";
@@ -25,7 +25,7 @@ export default function Admin() {
   }, []);
 
   const fetchArtworks = async () => {
-    const data = await getAllArtworks();
+    const data = await getAllArtworksAdmin();
     setArtworks(data);
   };
 

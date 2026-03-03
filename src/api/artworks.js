@@ -12,8 +12,28 @@ export async function getAllArtworks() {
   return await res.json();
 }
 
+// Admin should always edit the FR source-of-truth fields.
+// This prevents mixing FR/EN if the admin UI language is set to EN.
+export async function getAllArtworksAdmin() {
+  const url = withLanguageQuery(`${API}/`, 'fr');
+  const res = await fetch(url, {
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error("Impossible de récupérer les œuvres");
+  return await res.json();
+}
+
 export async function getArtworkById(id) {
   const url = withLanguageQuery(`${API}/${id}`, getCurrentLanguage());
+  const res = await fetch(url, {
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error("Œuvre introuvable");
+  return await res.json();
+}
+
+export async function getArtworkByIdAdmin(id) {
+  const url = withLanguageQuery(`${API}/${id}`, 'fr');
   const res = await fetch(url, {
     credentials: 'include',
   });
@@ -90,6 +110,38 @@ export async function translateDescription(artworkId, descriptionFr) {
     })
   });
   if (!res.ok) throw new Error("Échec de la traduction");
+  return await res.json();
+}
+
+export async function translateTitle(artworkId, titleFr) {
+  const res = await fetch(`${API}/translate-title`, {
+    method: "POST",
+    credentials: 'include',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      artwork_id: artworkId,
+      title_fr: titleFr
+    })
+  });
+  if (!res.ok) throw new Error("Échec de la traduction");
+  return await res.json();
+}
+
+export async function updateTitleEn(artworkId, titleEn) {
+  const res = await fetch(`${API}/update-title-en`, {
+    method: "PUT",
+    credentials: 'include',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      artwork_id: artworkId,
+      title_en: titleEn
+    })
+  });
+  if (!res.ok) throw new Error("Échec de la mise à jour");
   return await res.json();
 }
 

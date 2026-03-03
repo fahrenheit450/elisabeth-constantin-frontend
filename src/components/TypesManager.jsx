@@ -1,26 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaTrash, FaEdit, FaCog, FaTimes, FaCheck } from 'react-icons/fa';
 import { updateArtworkType } from '../api/artworks';
-import { createArtworkType, deleteArtworkType as deleteArtworkTypeAPI } from '../api/artworkTypes';
+import { createArtworkType, deleteArtworkType as deleteArtworkTypeAPI, translateArtworkTypeEn } from '../api/artworkTypes';
 import '../styles/typesManager.css';
 
 const TypesManager = ({ availableTypes, onTypesChange }) => {
   const [showModal, setShowModal] = useState(false);
   const [newType, setNewType] = useState('');
+  const [newDisplayFr, setNewDisplayFr] = useState('');
+  const [newDisplayEn, setNewDisplayEn] = useState('');
+  const [isTranslatingEn, setIsTranslatingEn] = useState(false);
   const [editingType, setEditingType] = useState(null);
   const [editingValue, setEditingValue] = useState('');
 
   const handleAddType = async () => {
     if (newType.trim() && !availableTypes.includes(newType.trim().toLowerCase())) {
       try {
-        const result = await createArtworkType(newType.trim().toLowerCase());
+        const result = await createArtworkType(
+          newType.trim().toLowerCase(),
+          newDisplayFr.trim() || null,
+          newDisplayEn.trim() || null
+        );
         const updatedTypes = [...availableTypes, newType.trim().toLowerCase()];
         onTypesChange(updatedTypes);
         setNewType('');
+        setNewDisplayFr('');
+        setNewDisplayEn('');
       } catch (error) {
         console.error('Erreur lors de la création du type:', error);
         alert('Erreur lors de la création du type d\'œuvre: ' + error.message);
       }
+    }
+  };
+
+  const handleAutoTranslateEn = async () => {
+    if (!newType.trim()) {
+      alert("Renseignez d'abord la clé du type.");
+      return;
+    }
+    if (!newDisplayFr.trim()) {
+      alert("Renseignez d'abord le libellé FR.");
+      return;
+    }
+    try {
+      setIsTranslatingEn(true);
+      // Create first (if not exists), then translate EN in DB (ensures consistent behavior)
+      if (!availableTypes.includes(newType.trim().toLowerCase())) {
+        await createArtworkType(newType.trim().toLowerCase(), newDisplayFr.trim() || null, null);
+        onTypesChange([...availableTypes, newType.trim().toLowerCase()]);
+      }
+      const res = await translateArtworkTypeEn(newType.trim().toLowerCase());
+      setNewDisplayEn(res.display_name_en || '');
+    } catch (error) {
+      console.error('Erreur auto-traduction EN:', error);
+      alert('Erreur auto-traduction EN: ' + error.message);
+    } finally {
+      setIsTranslatingEn(false);
     }
   };
 
@@ -124,12 +159,35 @@ const TypesManager = ({ availableTypes, onTypesChange }) => {
               <div className="add-type-section">
                 <input
                   type="text"
-                  placeholder="Nouveau type d'œuvre"
+                  placeholder="Clé du type (ex: peinture)"
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleAddType()}
                   className="add-type-input"
                 />
+                <input
+                  type="text"
+                  placeholder="Libellé FR (optionnel)"
+                  value={newDisplayFr}
+                  onChange={(e) => setNewDisplayFr(e.target.value)}
+                  className="add-type-input small"
+                />
+                <input
+                  type="text"
+                  placeholder="Label EN (optionnel)"
+                  value={newDisplayEn}
+                  onChange={(e) => setNewDisplayEn(e.target.value)}
+                  className="add-type-input small"
+                />
+                <button
+                  type="button"
+                  className="add-type-btn"
+                  onClick={handleAutoTranslateEn}
+                  disabled={!newType.trim() || !newDisplayFr.trim() || isTranslatingEn}
+                  title="Auto-traduire le libellé EN depuis le FR"
+                >
+                  {isTranslatingEn ? 'Traduction...' : 'Auto EN'}
+                </button>
                 <button
                   type="button"
                   className="add-type-btn"
