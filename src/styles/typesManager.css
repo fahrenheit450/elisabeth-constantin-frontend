@@ -96,7 +96,8 @@ body.modal-open {
 
 /* Section d'ajout de type */
 .add-type-section {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
   margin-bottom: 2rem;
   padding: 1.5rem;
@@ -106,13 +107,26 @@ body.modal-open {
 }
 
 .add-type-input {
-  flex: 1;
+  width: 100%;
+  min-width: 0;
   padding: 0.8rem 1rem;
   border: 2px solid #e9ecef;
   border-radius: 8px;
   font-size: 1rem;
   font-family: 'Playfair Display', serif;
   transition: all 0.3s ease;
+}
+
+.add-type-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.add-type-actions .add-type-btn {
+  white-space: nowrap;
 }
 
 .add-type-input:focus {
@@ -316,8 +330,17 @@ body.modal-open {
   }
   
   .add-type-section {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 1rem;
+  }
+
+  .add-type-actions {
+    justify-content: stretch;
+  }
+
+  .add-type-actions .add-type-btn {
+    flex: 1;
+    justify-content: center;
   }
   
   .types-manager-btn {

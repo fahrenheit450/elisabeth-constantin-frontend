@@ -61,3 +61,21 @@ export async function translateArtworkTypeEn(typeName) {
 
   return await res.json();
 }
+
+export async function translateArtworkTypeLabel(textFr) {
+  const res = await fetch(`${API}/translate-label`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ text_fr: textFr }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Erreur ${res.status}: ${errorText}`);
+  }
+
+  return await res.json();
+}

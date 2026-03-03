@@ -511,7 +511,7 @@ useEffect(() => {
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <input
                   type="text"
-                  className="tableau-titre editable"
+                  className="tableau-titre editable en-title"
                   value={titleEn}
                   onChange={(e) => setTitleEn(e.target.value)}
                   placeholder="Title (EN)"

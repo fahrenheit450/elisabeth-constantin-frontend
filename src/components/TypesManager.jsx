@@ -1,29 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaTrash, FaEdit, FaCog, FaTimes, FaCheck } from 'react-icons/fa';
 import { updateArtworkType } from '../api/artworks';
-import { createArtworkType, deleteArtworkType as deleteArtworkTypeAPI, translateArtworkTypeEn } from '../api/artworkTypes';
+import { createArtworkType, deleteArtworkType as deleteArtworkTypeAPI, translateArtworkTypeLabel } from '../api/artworkTypes';
 import '../styles/typesManager.css';
 
 const TypesManager = ({ availableTypes, onTypesChange }) => {
   const [showModal, setShowModal] = useState(false);
-  const [newType, setNewType] = useState('');
   const [newDisplayFr, setNewDisplayFr] = useState('');
   const [newDisplayEn, setNewDisplayEn] = useState('');
   const [isTranslatingEn, setIsTranslatingEn] = useState(false);
   const [editingType, setEditingType] = useState(null);
   const [editingValue, setEditingValue] = useState('');
 
+  const computeTypeKey = (displayFr) => {
+    const base = (displayFr || '').toString().toLowerCase().trim();
+    return base.replace(/\s+/g, ' ');
+  };
+
   const handleAddType = async () => {
-    if (newType.trim() && !availableTypes.includes(newType.trim().toLowerCase())) {
+    const typeKey = computeTypeKey(newDisplayFr);
+    if (typeKey && !availableTypes.includes(typeKey)) {
       try {
-        const result = await createArtworkType(
-          newType.trim().toLowerCase(),
+        await createArtworkType(
+          typeKey,
           newDisplayFr.trim() || null,
           newDisplayEn.trim() || null
         );
-        const updatedTypes = [...availableTypes, newType.trim().toLowerCase()];
+        const updatedTypes = [...availableTypes, typeKey];
         onTypesChange(updatedTypes);
-        setNewType('');
         setNewDisplayFr('');
         setNewDisplayEn('');
       } catch (error) {
@@ -34,23 +38,14 @@ const TypesManager = ({ availableTypes, onTypesChange }) => {
   };
 
   const handleAutoTranslateEn = async () => {
-    if (!newType.trim()) {
-      alert("Renseignez d'abord la clé du type.");
-      return;
-    }
     if (!newDisplayFr.trim()) {
       alert("Renseignez d'abord le libellé FR.");
       return;
     }
     try {
       setIsTranslatingEn(true);
-      // Create first (if not exists), then translate EN in DB (ensures consistent behavior)
-      if (!availableTypes.includes(newType.trim().toLowerCase())) {
-        await createArtworkType(newType.trim().toLowerCase(), newDisplayFr.trim() || null, null);
-        onTypesChange([...availableTypes, newType.trim().toLowerCase()]);
-      }
-      const res = await translateArtworkTypeEn(newType.trim().toLowerCase());
-      setNewDisplayEn(res.display_name_en || '');
+      const res = await translateArtworkTypeLabel(newDisplayFr.trim());
+      setNewDisplayEn(res.text_en || '');
     } catch (error) {
       console.error('Erreur auto-traduction EN:', error);
       alert('Erreur auto-traduction EN: ' + error.message);
@@ -107,7 +102,8 @@ const TypesManager = ({ availableTypes, onTypesChange }) => {
     setShowModal(false);
     setEditingType(null);
     setEditingValue('');
-    setNewType('');
+    setNewDisplayFr('');
+    setNewDisplayEn('');
   };
 
   // Fermer le modal avec Escape
@@ -159,44 +155,40 @@ const TypesManager = ({ availableTypes, onTypesChange }) => {
               <div className="add-type-section">
                 <input
                   type="text"
-                  placeholder="Clé du type (ex: peinture)"
-                  value={newType}
-                  onChange={(e) => setNewType(e.target.value)}
+                  placeholder="Libellé FR (ex: Peinture, Plan 3D)"
+                  value={newDisplayFr}
+                  onChange={(e) => setNewDisplayFr(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleAddType()}
                   className="add-type-input"
                 />
                 <input
                   type="text"
-                  placeholder="Libellé FR (optionnel)"
-                  value={newDisplayFr}
-                  onChange={(e) => setNewDisplayFr(e.target.value)}
-                  className="add-type-input small"
-                />
-                <input
-                  type="text"
-                  placeholder="Label EN (optionnel)"
+                  placeholder="Label EN (ex: Painting, 3D Panel)"
                   value={newDisplayEn}
                   onChange={(e) => setNewDisplayEn(e.target.value)}
-                  className="add-type-input small"
+                  className="add-type-input"
                 />
-                <button
-                  type="button"
-                  className="add-type-btn"
-                  onClick={handleAutoTranslateEn}
-                  disabled={!newType.trim() || !newDisplayFr.trim() || isTranslatingEn}
-                  title="Auto-traduire le libellé EN depuis le FR"
-                >
-                  {isTranslatingEn ? 'Traduction...' : 'Auto EN'}
-                </button>
-                <button
-                  type="button"
-                  className="add-type-btn"
-                  onClick={handleAddType}
-                  disabled={!newType.trim()}
-                >
-                  <FaPlus />
-                  Ajouter
-                </button>
+                <div className="add-type-actions">
+                  <button
+                    type="button"
+                    className="add-type-btn"
+                    onClick={handleAutoTranslateEn}
+                    disabled={!newDisplayFr.trim() || isTranslatingEn}
+                    title="Auto-traduire le label EN depuis le FR"
+                  >
+                    {isTranslatingEn ? 'Traduction...' : 'Auto EN'}
+                  </button>
+                  <button
+                    type="button"
+                    className="add-type-btn"
+                    onClick={handleAddType}
+                    disabled={!newDisplayFr.trim()}
+                    title="Créer le type"
+                  >
+                    <FaPlus />
+                    Ajouter
+                  </button>
+                </div>
               </div>
 
               <div className="types-list">
